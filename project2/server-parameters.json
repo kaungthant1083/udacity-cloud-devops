@@ -1,0 +1,10 @@
+[
+    {
+        "ParameterKey":"EnvironmentName",
+        "ParameterValue":"UdacityHA"
+    },
+    {
+        "ParameterKey":"EBSVolumeSize",
+        "ParameterValue": "10"
+    }
+]
