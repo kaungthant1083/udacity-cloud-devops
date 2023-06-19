@@ -1,6 +1,5 @@
 # udacity-cloud-devops
-We are deploying High Available Web applicaiton as per the following Architecture Diagram. 
-[https://github.com/kaungthant1083/udacity-cloud-devops/blob/main/project2/udacity-high-availability-architecture.png](url)
+We are deploying High Available Web applicaiton 
 
 **Create VPC Environment for our Web Application**
 
