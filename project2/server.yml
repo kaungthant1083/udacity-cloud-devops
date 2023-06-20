@@ -15,6 +15,9 @@ Parameters:
     Description: Set the maximum number of EC2 instances for our app
     Type: Number
     Default: 4
+  KeyPair:
+    Description: Key Pair for EC2 Login
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::KeyPair::KeyName>
 Resources:
 #IAM Role for S3 
   EC2ReadOnlyS3Role:
@@ -95,7 +98,7 @@ Resources:
       #Add the UbuntuAMI for us-east-1
       ImageId: ami-053b0d53c279acc90
       # ToDo: Change the key-pair name, as applicable to you. 
-      KeyName: kt-udacity-devops
+      KeyName: !Ref KeyPair
       SecurityGroups:
       - Ref: WebServerSecGroup
       InstanceType: t3a.medium

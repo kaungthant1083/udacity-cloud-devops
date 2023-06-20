@@ -1,6 +1,8 @@
 # udacity-cloud-devops
 We are deploying High Available Web applicaiton 
 
+Website endpoint : udaci-WebAp-1GKPZNI8FJSRJ-1755838113.us-east-1.elb.amazonaws.com 
+
 **Create VPC Environment for our Web Application**
 
 ```
