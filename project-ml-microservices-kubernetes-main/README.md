@@ -50,9 +50,17 @@ source .devops/bin/activate
 ### Kubernetes Steps
 
 * Setup and Configure Docker locally
-* Setup and Configure Kubernetes locally
+    > https://docs.docker.com/engine/install/
+
+* Setup and Configure Kubernetes locallly
+    * We will use minikube to run k8s and follow this tutorial to run minikube. 
+    > https://kubernetes.io/vi/docs/tasks/tools/install-minikube/
+
 * Create Flask app in Container
+    * Create Dockerfile that will build our app.py to become container. You can check Dockerfile for details
+
 * Run via kubectl
+    > kubectl run udacity-ml --image=<your image> --port=80
 
 ### Files Included
 

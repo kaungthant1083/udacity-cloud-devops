@@ -1,3 +1,4 @@
+[15:58:56] lwinkt in ~/Desktop/Study/udacity-cloud-devops/project-ml-microservices-kubernetes-main ⎈ minikube ❯ ./make_prediction.sh 
 Port: 8080
 {
   "prediction": [

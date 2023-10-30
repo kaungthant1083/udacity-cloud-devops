@@ -1,7 +1,6 @@
+15:56:36] lwinkt in ~/Desktop/Study/udacity-cloud-devops/project-ml-microservices-kubernetes-main ⎈ minikube ❯ ./run_kubernetes.sh
 Error from server (AlreadyExists): pods "udacity-ml" already exists
 NAME         READY   STATUS    RESTARTS   AGE
-udacity-ml   1/1     Running   0          5m57s
+udacity-ml   1/1     Running   0          63m
 Forwarding from 127.0.0.1:8080 -> 80
 Forwarding from [::1]:8080 -> 80
-Handling connection for 8080
-Handling connection for 8080
