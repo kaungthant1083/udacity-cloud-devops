@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EnvName:
+    Description: Env Name for resources 
+    Default: "udacity-capstone"
+    Type: String
+
+Resources:
+  MyEKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvName}-cluster-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        - arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
+
+  # ClusterInstanceProfile:
+  #   Type: AWS::IAM::InstanceProfile
+  #   Properties:
+  #     InstanceProfileName: !Sub ${EnvName}-cluster-profile
+  #     Path: "/"
+  #     Roles:
+  #       - !Ref MyEKSClusterRole
+
+  UdacityCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Version: "1.25"
+      Name: !Sub ${EnvName}-cluster
+      RoleArn: !GetAtt MyEKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ${EnvName}-SG
+        SubnetIds:
+          Fn::Split:
+            - ","
+            - Fn::ImportValue:
+                Fn::Sub: ${EnvName}-Pub-Nets
+Outputs:
+  EksId:
+    Description: EKS Id 
+    Value: !Ref UdacityCluster
+    Export:
+      Name: !Sub ${EnvName}-EKSCluster
+
+  EKSRoleArn:
+    Description: EKS Role for accessing and creating aws resources
+    Value: !GetAtt MyEKSClusterRole.Arn
+    Export:
+      Name: !Sub ${EnvName}-EKSRole

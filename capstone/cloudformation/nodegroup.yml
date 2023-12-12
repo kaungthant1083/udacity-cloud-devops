@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EnvName: 
+    Description: Env Name for resources 
+    Default: "udacity-capstone"
+    Type: String
+  MinSize: 
+    Description: Min Number of Web Servers 
+    Default: 2
+    Type: String 
+  MaxSize: 
+    Description: Max Number of Web Servers 
+    Default: 5
+    Type: String 
+  DesiredSize: 
+    Description: Desired EC2 Instances 
+    Default: 3 
+    Type: String 
+  KeyPairName:
+    Description: SSH Key for Servers 
+    Default: udacity-capstone
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+  NodeGroupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${EnvName}-NodeGroupRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "eks-node-group-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "eks:DescribeNodegroup"
+                  - "eks:ListNodegroups"
+                  - "eks:UpdateNodegroupConfig"
+                  - "eks:UpdateClusterConfig"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeInstances"
+                  - "ec2:DescribeInstanceTypes"
+                  - "ec2:DescribeKeyPairs"
+                  - "ec2:DescribeLaunchTemplates"
+                  - "ec2:DescribeSecurityGroups"
+                  - "ec2:DescribeSubnets"
+                  - "ec2:DescribeImages"
+                  - "ec2:DescribeVolumes"
+                  - "ec2:DescribeVpcs"
+                  - "ec2:CreateSecurityGroup"
+                  - "ec2:CreateTags"
+                  - "ec2:CreateVolume"
+                  - "ec2:ModifyInstanceAttribute"
+                  - "ec2:ModifyVolume"
+                  - "ec2:AttachVolume"
+                  - "ec2:AuthorizeSecurityGroupIngress"
+                  - "ec2:AuthorizeSecurityGroupEgress"
+                Resource: "*"
+  UdacityNodeGroup:
+    Type: "AWS::EKS::Nodegroup"
+    Properties:
+      ClusterName:
+        Fn::ImportValue:
+          Fn::Sub: "${EnvName}-EKSCluster"
+      NodegroupName: !Sub ${EnvName}-nodegroup
+      Subnets:
+        Fn::Split:
+            - ","
+            - Fn::ImportValue:
+                Fn::Sub: ${EnvName}-Pub-Nets
+      NodeRole: !GetAtt "NodeGroupRole.Arn"
+      ScalingConfig:
+        MinSize: !Ref MinSize
+        DesiredSize: !Ref DesiredSize
+        MaxSize: !Ref MaxSize
+
+
+Outputs:
+  NodeGroupRoleArn:
+    Value: !GetAtt "NodeGroupRole.Arn"
+    Description: "The ARN of the IAM role for the EKS node group."
+    Export:
+      Name: !Sub ${EnvName}-NodeGroupArn
+
+  NodegroupName:
+    Value: !Ref UdacityNodeGroup
+    Description: "The name of the EKS node group."
+    Export:
+      Name: !Sub ${EnvName}-NodeGroup

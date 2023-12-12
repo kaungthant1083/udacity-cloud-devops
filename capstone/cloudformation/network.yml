@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EnvName:
+    Description: Env Name for resources 
+    Default: "udacity-capstone"
+    Type: String
+
+  VpcCidrBlock:
+    Type: String
+    Default: "172.35.0.0/16"
+    Description: The CIDR range for this VPC 
+
+Resources:
+  MyVPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref "VpcCidrBlock"
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "true"
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${EnvName}-VPC
+  #Internet Gateway
+  igwName:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${EnvName}-IGW
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref "MyVPC"
+      InternetGatewayId: !Ref "igwName"
+  # Public Subnet 1
+  PublicSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "MyVPC"
+      CidrBlock: "172.35.0.0/20" 
+      AvailabilityZone: "us-east-1a" 
+      MapPublicIpOnLaunch: "true"
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${EnvName}-PublicSubnet1
+
+  # Public Subnet 2
+  PublicSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref "MyVPC"
+      CidrBlock: "172.35.16.0/20" 
+      AvailabilityZone: "us-east-1b" 
+      MapPublicIpOnLaunch: "true"
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${EnvName}-PublicSubnet2
+  #RouteTableForPublicSubnets
+  publicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref "MyVPC"
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${EnvName}-PublicRT
+  
+  #RoutetableAssociation
+  routeTableAssocPublic1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PublicSubnet1"
+      RouteTableId: !Ref "publicRouteTable"
+  
+  routeTableAssocPublic2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PublicSubnet2"
+      RouteTableId: !Ref "publicRouteTable"
+  
+  #RouteForIGW
+  routeIGW:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref "publicRouteTable"
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref "igwName"
+
+  # Security Group for EC2 Instances in Public Subnets
+  ControlplaneSG:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Security Group for EKS"
+      VpcId: !Ref "MyVPC"
+      SecurityGroupIngress:
+        - IpProtocol: tcp 
+          FromPort : 80
+          ToPort : 80
+          CidrIp: "0.0.0.0/0"
+
+Outputs:
+  VPCId:
+    Value: !Ref "MyVPC"
+    Description: "The ID of the created VPC."
+    Export:
+      Name: !Sub ${EnvName}-VPC
+  
+  PublicSubnets: 
+    Value: !Join [",", [!Ref PublicSubnet1, !Ref PublicSubnet2]]
+    Description: "The Public Subnets"
+    Export:
+      Name: !Sub ${EnvName}-Pub-Nets
+
+  PublicSubnet1Id:
+    Value: !Ref "PublicSubnet1"
+    Description: "The ID of the first public subnet."
+    Export:
+      Name: !Sub ${EnvName}-PublicSubnet1
+
+  PublicSubnet2Id:
+    Value: !Ref "PublicSubnet2"
+    Description: "The ID of the second public subnet."
+    Export:
+      Name: !Sub ${EnvName}-PublicSubnet2
+
+  PublicSecurityGroupId:
+    Value: !Ref "ControlplaneSG"
+    Description: "The ID of the security group for public EKS cluster."
+    Export:
+      Name: !Sub ${EnvName}-SG

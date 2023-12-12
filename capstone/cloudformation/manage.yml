@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EnvName: 
+    Description: Env Name for resources 
+    Default: "udacity-capstone"
+    Type: String
+  SSHKeyName:
+    Description: SSH Key for EC2 
+    Default: udacity-capstone
+    Type: String 
+  AmiImageId: 
+    Description: Image ID for management host 
+    Default: ami-0fc5d935ebf8bc3bc
+    Type: String 
+
+Resources: 
+  InstanceSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${EnvName}-ManagedSG
+      GroupDescription: Allow port 22 for SSH 
+      VpcId:
+        Fn::ImportValue: 
+          Fn::Sub: "${EnvName}-VPC"
+
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  ManagedHost: 
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: !Ref SSHKeyName
+      ImageId: !Ref AmiImageId
+      SecurityGroupIds:
+          - !GetAtt InstanceSG.GroupId
+      SubnetId:
+        Fn::ImportValue:
+          Fn::Sub: ${EnvName}-PublicSubnet1
+  
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvName}-ManagedHost
